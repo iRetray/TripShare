@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme": "retray",
     "owner": "retrayteam",
     "name": "TripShare",
     "slug": "TripShare",

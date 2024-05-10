@@ -1,14 +1,20 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, Button } from "react-native";
+import { StyleSheet } from "react-native";
+
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import { Home, AddPayment } from "./src/screens";
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Welcome to TripShare! v3 bien aletosa</Text>
-      <Text>Julian will work on it later 🥵</Text>
-      <Button title="Apretame pues" />
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="AddPayment" component={AddPayment} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
