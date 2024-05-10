@@ -1,14 +1,13 @@
 import { View, Text, Button } from "react-native";
 
-import { useRouter, Link } from "expo-router";
+import { Link } from "expo-router";
 
 const Home = () => {
-  const router = useRouter();
-
   return (
     <View>
-      <Text>Home</Text>
-      <Link href="details">Details</Link>
+      <Link href="AddPayment" asChild>
+        <Button title="Añadir un gasto del viaje" />
+      </Link>
     </View>
   );
 };
