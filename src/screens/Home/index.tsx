@@ -6,7 +6,7 @@ export const Home = ({ navigation }: any) => {
       <Text>Home</Text>
       <Button
         title="Go to Details"
-        onPress={() => navigation.navigate("AddPayment")}
+        onPress={() => navigation.navigate("Hola")}
       />
     </View>
   );
