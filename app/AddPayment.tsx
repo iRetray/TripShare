@@ -1,30 +1,51 @@
 import {
-  View,
-  Button,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
-import { Link } from "expo-router";
-import { StyleSheet } from "react-native";
-
-import { PickerIOS } from "@react-native-picker/picker";
 
 import { Input, InputMoney, Picker } from "./components";
 import { useState } from "react";
 
 import { Text } from "react-native";
 
-import AntDesign from "@expo/vector-icons/AntDesign";
-
 import * as Haptics from "expo-haptics";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 const AddPayment = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState<any>();
+  const [form, setForm] = useState({
+    payer: "",
+    value: 0,
+    description: "",
+    paymentType: "",
+    customPayment: [
+      {
+        name: "pepito",
+        expense: 10000,
+      },
+    ],
+  });
+
+  const handleSelectOptionPayer = (newPayer: string): void => {
+    setForm({ ...form, payer: newPayer });
+  };
+
+  const handleChangeMoney = (amount: number): void => {
+    setForm({ ...form, value: amount });
+  };
+
+  const handleChangeDescription = (newDescription: string): void => {
+    setForm({ ...form, description: newDescription });
+  };
+
+  const handleOptionSelected = (option: string) => {
+    setForm({ ...form, paymentType: option });
+  };
 
   return (
     <KeyboardAvoidingView
@@ -35,34 +56,72 @@ const AddPayment = () => {
         <Picker
           title="¿Quién pagó la cuenta?"
           options={["Juliana <3", "Julian", "Pepito", "Otro pepito"]}
-          onOptionSelected={(name) => {
-            console.log("selected: ", name);
-          }}
+          onOptionSelected={handleSelectOptionPayer}
         />
         <InputMoney
           titleInput="Valor del pago"
           placeholder="$ 25.000"
-          onChangeMoney={() => {}}
+          onChangeMoney={handleChangeMoney}
         />
         <Input
           titleInput="Descripción"
           placeholder="Salchipapa con butiffarra"
-          onChangeText={() => {}}
+          onChangeText={handleChangeDescription}
         />
         <Picker
           useAlternativeIcon
           title="Forma de repartir la cuenta"
           options={["Partes iguales", "Personalizado"]}
-          onOptionSelected={(name) => {
-            console.log("selected: ", name);
-          }}
+          onOptionSelected={handleOptionSelected}
         />
+        {form.paymentType === "Personalizado" && (
+          <View
+            style={{
+              marginTop: 10,
+              marginHorizontal: 20,
+              backgroundColor: "#d9d9d9",
+              padding: 20,
+              paddingBottom: 30,
+              borderRadius: 5,
+            }}
+          >
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                marginRight: 10,
+              }}
+            >
+              <FontAwesome5 name="info-circle" size={24} color="#8c8c8c" />
+              <Text
+                style={{ fontStyle: "italic", fontSize: 15, color: "#8c8c8c" }}
+              >
+                Ingresa el valor que le corresponde a cada persona
+              </Text>
+            </View>
+            <PersonExpense
+              name="Felipe"
+              handleChangeExpense={handleChangeMoney}
+            />
+            <PersonExpense
+              name="Felipe"
+              handleChangeExpense={handleChangeMoney}
+            />
+            <PersonExpense
+              name="Felipe"
+              handleChangeExpense={handleChangeMoney}
+            />
+          </View>
+        )}
         <TouchableOpacity
           onPress={() => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           }}
           style={{
             marginTop: 50,
+            marginBottom: 40,
             margin: "auto",
             backgroundColor: "#000000",
             display: "flex",
@@ -89,6 +148,24 @@ const AddPayment = () => {
     </KeyboardAvoidingView>
   );
 };
+
+interface PersonExpenseProps {
+  name: string;
+  handleChangeExpense: (expense: number) => void;
+}
+
+const PersonExpense: React.FC<PersonExpenseProps> = ({
+  name,
+  handleChangeExpense,
+}) => (
+  <View style={{ marginHorizontal: -20, marginTop: -10 }}>
+    <InputMoney
+      titleInput={name}
+      placeholder="$ 5.000"
+      onChangeMoney={handleChangeExpense}
+    />
+  </View>
+);
 
 const styles = StyleSheet.create({
   input: {

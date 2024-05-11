@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Input, InputText } from "./InputText";
 
 interface TextInputPropsMoney extends InputText {
-  onChangeMoney: (amount: string) => void;
+  onChangeMoney: (amount: number) => void;
 }
 
 export const InputMoney: React.FC<TextInputPropsMoney> = ({
@@ -27,7 +27,7 @@ export const InputMoney: React.FC<TextInputPropsMoney> = ({
     const isEmptyValue = cleanedValue.length === 0;
     const newValue = isEmptyValue ? "0" : cleanedValue;
     setValue(newValue);
-    onChangeMoney(newValue);
+    onChangeMoney(parseInt(newValue));
   };
 
   return (
