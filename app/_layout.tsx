@@ -8,6 +8,14 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Layout() {
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const formattedTime = `${hours % 12 || 12}:${
+    minutes < 10 ? "0" : ""
+  }${minutes} ${ampm}`;
+
   return (
     <Stack>
       <Stack.Screen
@@ -43,7 +51,7 @@ export default function Layout() {
                   fontWeight: "bold",
                 }}
               >
-                Ultima actualización: 10:15 PM
+                Ultima actualización: {formattedTime}
               </Text>
               <Text
                 style={{
@@ -52,7 +60,7 @@ export default function Layout() {
                   fontWeight: "light",
                 }}
               >
-                v.1.15.2
+                v.2.10.0
               </Text>
             </SafeAreaView>
           ),
@@ -61,7 +69,7 @@ export default function Layout() {
       <Stack.Screen
         name="AddPayment"
         options={{
-          title: "Añadir gasto",
+          title: "Añadir pago",
         }}
       />
     </Stack>

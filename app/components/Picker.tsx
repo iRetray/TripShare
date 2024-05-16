@@ -74,7 +74,7 @@ interface OptionProps {
   onPress: (id: string) => void;
 }
 
-const Option: React.FC<OptionProps> = ({
+export const Option: React.FC<OptionProps> = ({
   name,
   useAlternativeIcon,
   isSelected,

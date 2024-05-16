@@ -141,7 +141,7 @@ const AddPayment = () => {
             style={{ marginRight: 15 }}
           />
           <Text style={{ color: "white", fontSize: 25, fontWeight: "bold" }}>
-            Añadir gasto
+            Añadir pago
           </Text>
         </TouchableOpacity>
       </ScrollView>
