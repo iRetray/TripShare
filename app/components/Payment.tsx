@@ -1,11 +1,5 @@
-import React, { useState } from "react";
-import {
-  TextInput,
-  StyleSheet,
-  TextInputProps,
-  View,
-  Text,
-} from "react-native";
+import React from "react";
+import { StyleSheet, View, Text } from "react-native";
 import { Option } from "./Picker";
 import { Payment as PaymentInterface } from "../types";
 
@@ -152,7 +146,7 @@ export const Payment: React.FC<PaymentProps> = ({ payment }) => {
                 </View>
                 <Text
                   style={{
-                    fontSize: 14,
+                    fontSize: 20,
                     fontWeight: "bold",
                     fontFamily: "Helvetica Neue",
                     color: "#8c8c8c",
