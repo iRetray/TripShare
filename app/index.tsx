@@ -57,12 +57,12 @@ const Home = () => {
         style={{ paddingTop: 20 }}
       >
         {payments.map((payment: Payment, index: number) => (
-          <>
-            <PaymentComponent payment={payment} key={index} />
+          <View key={index}>
+            <PaymentComponent payment={payment} />
             {index === payments.length - 1 && (
               <View style={{ height: 120 }}></View>
             )}
-          </>
+          </View>
         ))}
       </ScrollView>
       <Link href="AddPayment" asChild>

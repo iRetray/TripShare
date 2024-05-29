@@ -1,5 +1,7 @@
 import { Payment } from "../types";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const myPeople = ["Felipe", "Julian", "Peña", "Yesid"];
 
 const myDataBase: Payment[] = [
@@ -67,6 +69,18 @@ const myDataBase: Payment[] = [
   }, */
 ];
 
+const APP_KEY = "TRIP_SHARE_DATABASE";
+
+const StorageService = {
+  save: (data: any) => {
+    AsyncStorage.setItem(APP_KEY, JSON.stringify(data));
+  },
+  load: async () => {
+    const jsonValue = await AsyncStorage.getItem(APP_KEY);
+    return jsonValue != null ? JSON.parse(jsonValue) : [];
+  },
+};
+
 const DatabaseService = {
   getPeople: (): Promise<string[]> =>
     new Promise((resolve) => {
@@ -75,11 +89,14 @@ const DatabaseService = {
 
   getPayments: (): Promise<Payment[]> =>
     new Promise((resolve) => {
-      resolve(myDataBase);
+      StorageService.load().then((dataLoaded) => {
+        resolve(dataLoaded);
+      });
     }),
 
   savePayment: (newPayment: Payment): void => {
     myDataBase.push(newPayment);
+    StorageService.save(myDataBase);
   },
 };
 
