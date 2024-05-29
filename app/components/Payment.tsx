@@ -86,7 +86,7 @@ export const Payment: React.FC<PaymentProps> = ({ payment }) => {
             alignItems: "center",
           }}
         >
-          <View>
+          <View style={{ flex: 1 }}>
             <Text
               style={{
                 fontSize: 30,
@@ -127,8 +127,9 @@ export const Payment: React.FC<PaymentProps> = ({ payment }) => {
               borderRadius: 5,
             }}
           >
-            {payment.customPayment.map((customPayment) => (
+            {payment.customPayment.map((customPayment, index) => (
               <View
+                key={index}
                 style={{
                   display: "flex",
                   flexDirection: "row",

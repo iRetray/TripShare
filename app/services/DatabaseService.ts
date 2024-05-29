@@ -1,7 +1,9 @@
 import { Payment } from "../types";
 
+const myPeople = ["Felipe", "Julian", "Peña", "Yesid"];
+
 const myDataBase: Payment[] = [
-  {
+  /*  {
     payer: "Felipe",
     value: 25000,
     description: "arroz con huevo",
@@ -62,14 +64,23 @@ const myDataBase: Payment[] = [
     description: "Unas frias de 100 barras",
     isCustomPayment: false,
     customPayment: [],
-  },
+  }, */
 ];
 
 const DatabaseService = {
+  getPeople: (): Promise<string[]> =>
+    new Promise((resolve) => {
+      resolve(myPeople);
+    }),
+
   getPayments: (): Promise<Payment[]> =>
     new Promise((resolve) => {
       resolve(myDataBase);
     }),
+
+  savePayment: (newPayment: Payment): void => {
+    myDataBase.push(newPayment);
+  },
 };
 
 export default DatabaseService;

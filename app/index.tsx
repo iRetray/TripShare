@@ -1,10 +1,9 @@
 import {
   View,
   Text,
-  Button,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 
 import { Link } from "expo-router";
@@ -12,20 +11,46 @@ import { Link } from "expo-router";
 import * as Haptics from "expo-haptics";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Payment as PaymentComponent } from "./components";
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import DatabaseService from "./services/DatabaseService";
 import { Payment } from "./types";
 
+import { useFocusEffect } from "expo-router";
+
 const Home = () => {
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [payments, setPayments] = useState<Payment[]>([]);
 
-  useEffect(() => {
-    DatabaseService.getPayments().then((newPayments) => {
-      setPayments(newPayments);
-    });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setTimeout(() => {
+        DatabaseService.getPayments().then((newPayments) => {
+          setPayments(newPayments);
+          console.log("new payments amount: ", newPayments.length);
+          setIsUpdating(false);
+        });
+      }, 200);
 
-  return (
+      return () => {
+        setIsUpdating(true);
+      };
+    }, [])
+  );
+
+  return isUpdating ? (
+    <View style={{ margin: 30, display: "flex", alignItems: "center" }}>
+      <Text
+        style={{
+          marginBottom: 20,
+          fontSize: 15,
+          fontWeight: "bold",
+        }}
+      >
+        Actualizando pagos
+      </Text>
+      <ActivityIndicator size="large" />
+    </View>
+  ) : (
     <View style={{ flex: 1 }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -33,7 +58,7 @@ const Home = () => {
       >
         {payments.map((payment: Payment, index: number) => (
           <>
-            <PaymentComponent payment={payment} />
+            <PaymentComponent payment={payment} key={index} />
             {index === payments.length - 1 && (
               <View style={{ height: 120 }}></View>
             )}

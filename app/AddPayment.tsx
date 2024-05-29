@@ -8,7 +8,9 @@ import {
 } from "react-native";
 
 import { Input, InputMoney, Picker } from "./components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { router } from "expo-router";
 
 import { Text } from "react-native";
 
@@ -16,20 +18,37 @@ import * as Haptics from "expo-haptics";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import DatabaseService from "./services/DatabaseService";
+import { Payment } from "./types";
+import Toast from "react-native-root-toast";
+
+enum PaymentWay {
+  equal = "Partes iguales",
+  custom = "Personalizado",
+}
 
 const AddPayment = () => {
-  const [form, setForm] = useState({
+  const [people, setPeople] = useState<string[]>([]);
+  const [form, setForm] = useState<Payment>({
     payer: "",
     value: 0,
     description: "",
-    paymentType: "",
-    customPayment: [
-      {
-        name: "pepito",
-        expense: 10000,
-      },
-    ],
+    // @ts-ignore
+    isCustomPayment: undefined,
+    customPayment: [],
   });
+
+  useEffect(() => {
+    DatabaseService.getPeople().then((newPeople) => {
+      setPeople(newPeople);
+      setForm({
+        ...form,
+        customPayment: [
+          ...newPeople.map((personName) => ({ name: personName, expense: 0 })),
+        ],
+      });
+    });
+  }, []);
 
   const handleSelectOptionPayer = (newPayer: string): void => {
     setForm({ ...form, payer: newPayer });
@@ -44,7 +63,74 @@ const AddPayment = () => {
   };
 
   const handleOptionSelected = (option: string) => {
-    setForm({ ...form, paymentType: option });
+    setForm({ ...form, isCustomPayment: option === PaymentWay.custom });
+  };
+
+  const handleChangePersonExpense = (
+    personName: string,
+    amount: number
+  ): void => {
+    setForm({
+      ...form,
+      customPayment: form.customPayment.map((elementPayment) =>
+        elementPayment.name === personName
+          ? { name: personName, expense: amount }
+          : elementPayment
+      ),
+    });
+  };
+
+  const formatCurrency = (amount: number): string => {
+    if (amount === 0) {
+      return "";
+    }
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const onPressSave = (): void => {
+    const customPaymentSum = form.customPayment.reduce(
+      (previous, current) => previous + current.expense,
+      0
+    );
+    const isCustomPaymentValid = form.isCustomPayment
+      ? customPaymentSum === form.value
+      : true;
+    if (isCustomPaymentValid) {
+      const isFormValid =
+        form.payer !== "" &&
+        form.value !== 0 &&
+        form.description !== "" &&
+        typeof form.isCustomPayment === "boolean" &&
+        isCustomPaymentValid;
+      if (isFormValid) {
+        DatabaseService.savePayment(form);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.back();
+      } else {
+        Toast.show("¡Completa los datos para guardar!", {
+          backgroundColor: "red",
+          opacity: 1,
+        });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } else {
+      const isLessMoney = customPaymentSum < form.value;
+      const diference = Math.abs(form.value - customPaymentSum);
+      Toast.show(
+        `Las cuentas estan mal, ${
+          isLessMoney ? "faltan" : "sobran"
+        } ${formatCurrency(diference)}`,
+        {
+          backgroundColor: "red",
+          opacity: 1,
+        }
+      );
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
   };
 
   return (
@@ -55,7 +141,7 @@ const AddPayment = () => {
       <ScrollView keyboardShouldPersistTaps="handled">
         <Picker
           title="¿Quién pagó la cuenta?"
-          options={["Juliana <3", "Julian", "Pepito", "Otro pepito"]}
+          options={people}
           onOptionSelected={handleSelectOptionPayer}
         />
         <InputMoney
@@ -71,10 +157,10 @@ const AddPayment = () => {
         <Picker
           useAlternativeIcon
           title="Forma de repartir la cuenta"
-          options={["Partes iguales", "Personalizado"]}
+          options={[PaymentWay.equal, PaymentWay.custom]}
           onOptionSelected={handleOptionSelected}
         />
-        {form.paymentType === "Personalizado" && (
+        {form.isCustomPayment && (
           <View
             style={{
               marginTop: 10,
@@ -101,24 +187,19 @@ const AddPayment = () => {
                 Ingresa el valor que le corresponde a cada persona
               </Text>
             </View>
-            <PersonExpense
-              name="Felipe"
-              handleChangeExpense={handleChangeMoney}
-            />
-            <PersonExpense
-              name="Felipe"
-              handleChangeExpense={handleChangeMoney}
-            />
-            <PersonExpense
-              name="Felipe"
-              handleChangeExpense={handleChangeMoney}
-            />
+            {people.map((person, index) => (
+              <PersonExpense
+                key={index}
+                name={person}
+                handleChangeExpense={(expense) => {
+                  handleChangePersonExpense(person, expense);
+                }}
+              />
+            ))}
           </View>
         )}
         <TouchableOpacity
-          onPress={() => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          }}
+          onPress={onPressSave}
           style={{
             marginTop: 50,
             marginBottom: 40,
