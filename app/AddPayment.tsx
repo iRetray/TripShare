@@ -201,18 +201,27 @@ const AddPayment = () => {
         <TouchableOpacity
           onPress={onPressSave}
           style={{
-            marginTop: 50,
-            marginBottom: 40,
+            marginTop: 30,
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 6,
+            },
+            shadowOpacity: 0.39,
+            shadowRadius: 8.3,
+            elevation: 13,
+            borderWidth: 1,
+            borderColor: "rgba(0,0,0,0.2)",
+            alignItems: "center",
+            justifyContent: "center",
             margin: "auto",
             backgroundColor: "#000000",
             display: "flex",
-            alignItems: "center",
             flexDirection: "row",
-            justifyContent: "center",
-            height: 60,
+            height: 50,
             width: "auto",
             paddingHorizontal: 30,
-            borderRadius: 5,
+            borderRadius: 100,
           }}
         >
           <FontAwesome

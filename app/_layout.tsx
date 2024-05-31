@@ -9,6 +9,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { RootSiblingParent as ToastNotificationsProvider } from "react-native-root-siblings";
 
+import AppJSON from "../app.json";
+
 export default function Layout() {
   const now = new Date();
   const hours = now.getHours();
@@ -63,7 +65,7 @@ export default function Layout() {
                     fontWeight: "light",
                   }}
                 >
-                  v.2.10.0
+                  {AppJSON.expo.version}
                 </Text>
               </SafeAreaView>
             ),
@@ -72,7 +74,15 @@ export default function Layout() {
         <Stack.Screen
           name="AddPayment"
           options={{
+            presentation: "modal",
             title: "Añadir pago",
+          }}
+        />
+        <Stack.Screen
+          name="DebtsToPay"
+          options={{
+            presentation: "modal",
+            title: "Resumen completo",
           }}
         />
       </Stack>
