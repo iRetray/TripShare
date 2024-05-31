@@ -40,9 +40,7 @@ const Home = () => {
 
   useFocusEffect(
     useCallback(() => {
-      setTimeout(() => {
-        getData();
-      }, 50);
+      getData();
 
       return () => {
         setIsUpdating(true);
