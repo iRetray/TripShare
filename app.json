@@ -4,7 +4,7 @@
     "owner": "retrayteam",
     "name": "TripShare",
     "slug": "TripShare",
-    "version": "3.9.0",
+    "version": "4.5.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

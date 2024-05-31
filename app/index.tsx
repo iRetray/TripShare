@@ -50,46 +50,46 @@ const Home = () => {
     }, [])
   );
 
-  const getData = (): void => {
-    clearDatabase();
-    getPaymentsList();
-    getAmountPeople();
-    getTotalExpenses();
+  const getData = async (): Promise<void> => {
+    await clearDatabase();
+    await getPaymentsList();
+    await getAmountPeople();
+    await getTotalExpenses();
     setTimeout(() => {
       setRefreshing(false);
     }, 500);
   };
 
-  const clearDatabase = (): void => {
+  const clearDatabase = async (): Promise<void> => {
     const currentVersion = AppJSON.expo.version;
-    DatabaseService.getAppLocalVersion().then((localVersion) => {
-      if (localVersion !== currentVersion) {
-        DatabaseService.deleteLocalDatabase();
-        Toast.show("¡Nueva version detectada! Limpiando base de datos", {
-          backgroundColor: "black",
-          opacity: 1,
-        });
-        DatabaseService.saveAppLocalVersion(currentVersion);
-      }
-    });
+    const localVersion = await DatabaseService.getAppLocalVersion();
+    if (localVersion !== currentVersion) {
+      await DatabaseService.deleteLocalDatabase();
+      Toast.show("¡Nueva version detectada! Limpiando base de datos", {
+        backgroundColor: "black",
+        opacity: 1,
+      });
+      await DatabaseService.saveAppLocalVersion(currentVersion);
+    }
   };
 
-  const getPaymentsList = (): void => {
-    DatabaseService.getPayments().then((newPayments) => {
+  const getPaymentsList = async (): Promise<void> => {
+    await DatabaseService.getPayments().then((newPayments) => {
+      console.log("payments getted: ", newPayments);
       setPayments(newPayments);
       console.log("new payments amount: ", newPayments.length);
       setIsUpdating(false);
     });
   };
 
-  const getAmountPeople = (): void => {
-    DatabaseService.getPeople().then((people) => {
+  const getAmountPeople = async (): Promise<void> => {
+    await DatabaseService.getPeople().then((people) => {
       setAmountPersons(people.length);
     });
   };
 
-  const getTotalExpenses = (): void => {
-    DatabaseService.getTotalExpenses().then((newTotalExpense) => {
+  const getTotalExpenses = async (): Promise<void> => {
+    await DatabaseService.getTotalExpenses().then((newTotalExpense) => {
       setTotalExpenses(newTotalExpense);
     });
   };

@@ -107,9 +107,10 @@ const AddPayment = () => {
         typeof form.isCustomPayment === "boolean" &&
         isCustomPaymentValid;
       if (isFormValid) {
-        DatabaseService.savePayment(form);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        router.back();
+        DatabaseService.savePayment(form).then(() => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          router.back();
+        });
       } else {
         Toast.show("¡Completa los datos para guardar!", {
           backgroundColor: "red",

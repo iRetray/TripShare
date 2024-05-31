@@ -75,51 +75,66 @@ const DATABASE_KEY = "TRIP_SHARE_DATABASE";
 const VERSION_LOCAL_KEY = "TRIP_SHARE_VERSION";
 
 const StorageService = {
-  save: (key: string, data: any) => {
-    AsyncStorage.setItem(key, JSON.stringify(data));
+  save: async (key: string, data: any) => {
+    console.log("saving: ", key, " --- ", data);
+    await AsyncStorage.setItem(key, JSON.stringify(data));
   },
   load: async (key: string) => {
+    console.log("load: ", key);
     const jsonValue = await AsyncStorage.getItem(key);
-    return jsonValue != null ? JSON.parse(jsonValue) : undefined;
+    console.log("jsonValue: ", jsonValue);
+    return jsonValue !== null ? JSON.parse(jsonValue) : undefined;
+  },
+  clearAll: async () => {
+    console.log("clearAll: ");
+    await AsyncStorage.clear();
   },
 };
 
 const DatabaseService = {
   getAppLocalVersion: (): Promise<string> =>
     new Promise((resolve) => {
+      console.log("getAppLocalVersion()");
       StorageService.load(VERSION_LOCAL_KEY).then((versionLoaded) => {
         resolve(versionLoaded ? versionLoaded : "");
       });
     }),
 
-  saveAppLocalVersion: (version: string): void => {
-    StorageService.save(VERSION_LOCAL_KEY, version);
+  saveAppLocalVersion: async (version: string): Promise<void> => {
+    console.log("saveAppLocalVersion()");
+    await StorageService.save(VERSION_LOCAL_KEY, version);
   },
 
-  deleteLocalDatabase: (): void => {
+  deleteLocalDatabase: async (): Promise<void> => {
+    console.log("deleteLocalDatabase()");
     myDataBase.length = 0;
-    StorageService.save(DATABASE_KEY, []);
+    await StorageService.save(DATABASE_KEY, []);
   },
 
   getPeople: (): Promise<string[]> =>
     new Promise((resolve) => {
+      console.log("getPeople()");
       resolve(myPeople);
     }),
 
   getPayments: (): Promise<Payment[]> =>
     new Promise((resolve) => {
+      console.log("getPayments()");
       StorageService.load(DATABASE_KEY).then((dataLoaded) => {
+        console.log("dataLoaded getPayments: ", dataLoaded);
         resolve(dataLoaded ? dataLoaded : []);
       });
     }),
 
-  savePayment: (newPayment: Payment): void => {
+  savePayment: async (newPayment: Payment): Promise<void> => {
+    console.log("savePayment()");
     myDataBase.push(newPayment);
-    StorageService.save(DATABASE_KEY, myDataBase);
+    await StorageService.save(DATABASE_KEY, myDataBase);
   },
 
   getTotalExpenses: (): Promise<number> =>
     new Promise((resolve) => {
+      console.log("getTotalExpenses()");
       DatabaseService.getPayments().then((payments) => {
         resolve(
           payments.reduce((previous, current) => previous + current.value, 0)
@@ -129,6 +144,7 @@ const DatabaseService = {
 
   getPaidByPerson: (): Promise<PaidByPerson[]> =>
     new Promise((resolve) => {
+      console.log("getPaidByPerson()");
       DatabaseService.getPayments().then((payments) => {
         resolve([
           ...myPeople.map((person) => ({
@@ -143,6 +159,7 @@ const DatabaseService = {
 
   getDebts: (): Promise<Debt[]> =>
     new Promise((resolve) => {
+      console.log("getDebts()");
       DatabaseService.getPayments().then((payments) => {
         resolve(calculateDebts(payments));
       });
