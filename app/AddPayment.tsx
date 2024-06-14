@@ -19,11 +19,9 @@ import * as Haptics from "expo-haptics";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import DatabaseService from "./services/DatabaseService";
 import { Payment, TripObject } from "./types";
 import Toast from "react-native-root-toast";
 import {
-  collection,
   doc,
   getDoc,
   getFirestore,
