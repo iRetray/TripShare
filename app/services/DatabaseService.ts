@@ -1,172 +1,34 @@
-import { Payment } from "../types";
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { PaidByPerson } from "../types/PaidByPerson.type";
-import { Debt } from "../types/Debt.type";
 
-const myPeople = ["Felipe", "Julian", "Peña", "Yesid"];
-
-const myDataBase: Payment[] = [
-  /*  {
-    payer: "Felipe",
-    value: 25000,
-    description: "arroz con huevo",
-    isCustomPayment: true,
-    customPayment: [
-      {
-        name: "Sebas",
-        expense: 10000,
-      },
-      {
-        name: "Julian",
-        expense: 5000,
-      },
-    ],
-  },
-  {
-    payer: "Julian",
-    value: 50000,
-    description: "Pescado de 100 barras",
-    isCustomPayment: false,
-    customPayment: [],
-  },
-  {
-    payer: "Sebas",
-    value: 25000,
-    description: "Las drinks salvajes",
-    isCustomPayment: true,
-    customPayment: [
-      {
-        name: "Felipe",
-        expense: 250000,
-      },
-      {
-        name: "Julian",
-        expense: 20500,
-      },
-    ],
-  },
-  {
-    payer: "Sebas",
-    value: 25000,
-    description: "Las drinks salvajes",
-    isCustomPayment: true,
-    customPayment: [
-      {
-        name: "Felipe",
-        expense: 250000,
-      },
-      {
-        name: "Julian",
-        expense: 20500,
-      },
-    ],
-  },
-  {
-    payer: "Felipe",
-    value: 50000,
-    description: "Unas frias de 100 barras",
-    isCustomPayment: false,
-    customPayment: [],
-  }, */
-];
-
-const DATABASE_KEY = "TRIP_SHARE_DATABASE";
-const VERSION_LOCAL_KEY = "TRIP_SHARE_VERSION";
+const LOCAL_TRIP_CODE = "LOCAL_TRIP_CODE";
 
 const StorageService = {
   save: async (key: string, data: any) => {
-    console.log("saving: ", key, " --- ", data);
     await AsyncStorage.setItem(key, JSON.stringify(data));
   },
   load: async (key: string) => {
-    console.log("load: ", key);
     const jsonValue = await AsyncStorage.getItem(key);
-    console.log("jsonValue: ", jsonValue);
     return jsonValue !== null ? JSON.parse(jsonValue) : undefined;
   },
   clearAll: async () => {
-    console.log("clearAll: ");
     await AsyncStorage.clear();
   },
 };
 
 const DatabaseService = {
-  getAppLocalVersion: (): Promise<string> =>
-    new Promise((resolve) => {
-      console.log("getAppLocalVersion()");
-      StorageService.load(VERSION_LOCAL_KEY).then((versionLoaded) => {
+  getLocalTripCode: (): Promise<string> =>
+    new Promise(async (resolve) => {
+      StorageService.load(LOCAL_TRIP_CODE).then((versionLoaded) => {
         resolve(versionLoaded ? versionLoaded : "");
       });
     }),
 
-  saveAppLocalVersion: async (version: string): Promise<void> => {
-    console.log("saveAppLocalVersion()");
-    await StorageService.save(VERSION_LOCAL_KEY, version);
+  saveLocalTripCode: async (tripCode: string): Promise<void> => {
+    await StorageService.save(LOCAL_TRIP_CODE, tripCode);
   },
-
-  deleteLocalDatabase: async (): Promise<void> => {
-    console.log("deleteLocalDatabase()");
-    myDataBase.length = 0;
-    await StorageService.save(DATABASE_KEY, []);
-  },
-
-  getPeople: (): Promise<string[]> =>
-    new Promise((resolve) => {
-      console.log("getPeople()");
-      resolve(myPeople);
-    }),
-
-  getPayments: (): Promise<Payment[]> =>
-    new Promise((resolve) => {
-      console.log("getPayments()");
-      StorageService.load(DATABASE_KEY).then((dataLoaded) => {
-        console.log("dataLoaded getPayments: ", dataLoaded);
-        resolve(dataLoaded ? dataLoaded : []);
-      });
-    }),
-
-  savePayment: async (newPayment: Payment): Promise<void> => {
-    console.log("savePayment()");
-    myDataBase.push(newPayment);
-    await StorageService.save(DATABASE_KEY, myDataBase);
-  },
-
-  getTotalExpenses: (): Promise<number> =>
-    new Promise((resolve) => {
-      console.log("getTotalExpenses()");
-      DatabaseService.getPayments().then((payments) => {
-        resolve(
-          payments.reduce((previous, current) => previous + current.value, 0)
-        );
-      });
-    }),
-
-  getPaidByPerson: (): Promise<PaidByPerson[]> =>
-    new Promise((resolve) => {
-      console.log("getPaidByPerson()");
-      DatabaseService.getPayments().then((payments) => {
-        resolve([
-          ...myPeople.map((person) => ({
-            name: person,
-            value: payments
-              .filter((payment) => payment.payer === person)
-              .reduce((previous, current) => previous + current.value, 0),
-          })),
-        ]);
-      });
-    }),
-
-  getDebts: (): Promise<Debt[]> =>
-    new Promise((resolve) => {
-      console.log("getDebts()");
-      DatabaseService.getPayments().then((payments) => {
-        resolve(calculateDebts(payments));
-      });
-    }),
 };
 
-function calculateDebts(database: any): any {
+export function calculateDebts(database: any): any {
   try {
     console.log("calculando deudas: ", JSON.stringify(database));
     const balances = {};

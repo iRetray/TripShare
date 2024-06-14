@@ -4,7 +4,6 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  RefreshControl,
 } from "react-native";
 
 import { Link } from "expo-router";
@@ -12,87 +11,51 @@ import { Link } from "expo-router";
 import * as Haptics from "expo-haptics";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Payment as PaymentComponent, TravelCard } from "./components";
-import { useState, useCallback, useEffect } from "react";
-import DatabaseService from "./services/DatabaseService";
-import { Payment } from "./types";
+import { useState, useEffect } from "react";
+import { Payment, TripObject } from "./types";
 
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
-import { useFocusEffect } from "expo-router";
-
-import AppJSON from "../app.json";
-import Toast from "react-native-root-toast";
+import { doc, getFirestore, onSnapshot } from "firebase/firestore";
+import { app } from "../firebaseConfig";
 
 const Home = () => {
-  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [amountPersons, setAmountPersons] = useState<number>(0);
   const [totalExpenses, setTotalExpenses] = useState<number>(0);
 
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [payments, setPayments] = useState<Payment[]>([]);
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    getData();
+  const db = getFirestore(app);
+
+  useEffect(() => {
+    const unsubscribeFirestore = onSnapshot(
+      doc(db, "trips", "cartagena01"),
+      (doc) => {
+        if (doc.exists()) {
+          const newData: any = doc.data();
+          const currentData: TripObject = newData;
+          setAmountPersons(currentData.people.length);
+          setTotalExpenses(
+            currentData.payments.reduce(
+              (previous: any, current: any) => previous + current.value,
+              0
+            )
+          );
+          setPayments(currentData.payments);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    return () => {
+      unsubscribeFirestore();
+    };
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      getData();
-
-      return () => {
-        setIsUpdating(true);
-      };
-    }, [])
-  );
-
-  const getData = async (): Promise<void> => {
-    await clearDatabase();
-    await getPaymentsList();
-    await getAmountPeople();
-    await getTotalExpenses();
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 500);
-  };
-
-  const clearDatabase = async (): Promise<void> => {
-    const currentVersion = AppJSON.expo.version;
-    const localVersion = await DatabaseService.getAppLocalVersion();
-    if (localVersion !== currentVersion) {
-      await DatabaseService.deleteLocalDatabase();
-      Toast.show("¡Nueva version detectada! Limpiando base de datos", {
-        backgroundColor: "black",
-        opacity: 1,
-      });
-      await DatabaseService.saveAppLocalVersion(currentVersion);
-    }
-  };
-
-  const getPaymentsList = async (): Promise<void> => {
-    await DatabaseService.getPayments().then((newPayments) => {
-      console.log("payments getted: ", newPayments);
-      setPayments(newPayments);
-      console.log("new payments amount: ", newPayments.length);
-      setIsUpdating(false);
-    });
-  };
-
-  const getAmountPeople = async (): Promise<void> => {
-    await DatabaseService.getPeople().then((people) => {
-      setAmountPersons(people.length);
-    });
-  };
-
-  const getTotalExpenses = async (): Promise<void> => {
-    await DatabaseService.getTotalExpenses().then((newTotalExpense) => {
-      setTotalExpenses(newTotalExpense);
-    });
-  };
-
-  return isUpdating ? (
+  return isLoading ? (
     <View style={{ margin: 30, display: "flex", alignItems: "center" }}>
       <Text
         style={{
@@ -101,7 +64,7 @@ const Home = () => {
           fontWeight: "bold",
         }}
       >
-        Actualizando pagos
+        Cargando pagos...
       </Text>
       <ActivityIndicator size="large" />
     </View>
@@ -109,9 +72,6 @@ const Home = () => {
     <View style={{ flex: 1 }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
         style={{ paddingTop: 20 }}
       >
         {payments.length > 0 && (

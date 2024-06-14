@@ -11,14 +11,26 @@ import { RootSiblingParent as ToastNotificationsProvider } from "react-native-ro
 
 import AppJSON from "../app.json";
 
+import { useEffect, useState } from "react";
+
+import NetInfo from "@react-native-community/netinfo";
+
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import AntDesign from "@expo/vector-icons/AntDesign";
+
 export default function Layout() {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  const formattedTime = `${hours % 12 || 12}:${
-    minutes < 10 ? "0" : ""
-  }${minutes} ${ampm}`;
+  const [isConnected, setIsConnected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const unsubscribeNetInfo = NetInfo.addEventListener((state) => {
+      setIsConnected(state.isInternetReachable);
+    });
+
+    return () => {
+      unsubscribeNetInfo();
+    };
+  }, []);
 
   return (
     <ToastNotificationsProvider>
@@ -48,24 +60,115 @@ export default function Layout() {
                     TripShare
                   </Text>
                 </View>
+                <View style={{ marginLeft: 15, marginTop: 10 }}>
+                  <Text>
+                    {isConnected === null ? (
+                      <View
+                        style={{
+                          backgroundColor: "#faad14",
+                          display: "flex",
+                          flexDirection: "row",
+                          paddingVertical: 3,
+                          paddingHorizontal: 10,
+                          borderRadius: 10,
+                          alignItems: "center",
+                        }}
+                      >
+                        <View
+                          style={{
+                            marginRight: 5,
+                          }}
+                        >
+                          <AntDesign
+                            name="questioncircle"
+                            size={15}
+                            color="white"
+                          />
+                        </View>
+                        <Text
+                          style={{
+                            color: "white",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Verificando conexión...
+                        </Text>
+                      </View>
+                    ) : isConnected ? (
+                      <View
+                        style={{
+                          backgroundColor: "#52c41a",
+                          display: "flex",
+                          flexDirection: "row",
+                          paddingVertical: 3,
+                          paddingHorizontal: 10,
+                          borderRadius: 10,
+                          alignItems: "center",
+                        }}
+                      >
+                        <View
+                          style={{
+                            marginRight: 5,
+                          }}
+                        >
+                          <MaterialCommunityIcons
+                            name="lightning-bolt-circle"
+                            size={15}
+                            color="white"
+                          />
+                        </View>
+                        <Text
+                          style={{
+                            color: "white",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Online
+                        </Text>
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          backgroundColor: "#f5222d",
+                          display: "flex",
+                          flexDirection: "row",
+                          paddingVertical: 3,
+                          paddingHorizontal: 10,
+                          borderRadius: 10,
+                          alignItems: "center",
+                        }}
+                      >
+                        <View
+                          style={{
+                            marginRight: 5,
+                          }}
+                        >
+                          <Ionicons
+                            name="cloud-offline"
+                            size={15}
+                            color="white"
+                          />
+                        </View>
+                        <Text
+                          style={{
+                            color: "white",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Offline
+                        </Text>
+                      </View>
+                    )}
+                  </Text>
+                </View>
                 <Text
                   style={{
-                    marginTop: 10,
                     marginLeft: 20,
                     fontSize: 15,
                     fontWeight: "bold",
                   }}
                 >
-                  Ultima actualización: {formattedTime}
-                </Text>
-                <Text
-                  style={{
-                    marginLeft: 20,
-                    fontSize: 15,
-                    fontWeight: "light",
-                  }}
-                >
-                  {AppJSON.expo.version}
+                  v{AppJSON.expo.version}
                 </Text>
               </SafeAreaView>
             ),

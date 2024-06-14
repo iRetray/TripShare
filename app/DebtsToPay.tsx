@@ -5,34 +5,48 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { Option } from "./components";
 import { useEffect, useState } from "react";
-import DatabaseService from "./services/DatabaseService";
+import DatabaseService, { calculateDebts } from "./services/DatabaseService";
 import { PaidByPerson } from "./types/PaidByPerson.type";
 
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Debt } from "./types/Debt.type";
 
 import Feather from "@expo/vector-icons/Feather";
+import { collection, doc, getFirestore, onSnapshot } from "firebase/firestore";
+import { TripObject } from "./types";
+import { app } from "../firebaseConfig";
 
 const DebtsToPay = () => {
   const [paidByPerson, setPaidByPerson] = useState<PaidByPerson[]>([]);
   const [debts, setDebts] = useState<Debt[]>([]);
 
+  const db = getFirestore(app);
+
   useEffect(() => {
-    getPaids();
-    getDebts();
+    const unsubscribeFirestore = onSnapshot(
+      doc(db, "trips", "cartagena01"),
+      (doc) => {
+        if (doc.exists()) {
+          const newData: any = doc.data();
+          const currentData: TripObject = newData;
+          const newPaidByPerson = [
+            ...currentData.people.map((person) => ({
+              name: person,
+              value: currentData.payments
+                .filter((payment) => payment.payer === person)
+                .reduce((previous, current) => previous + current.value, 0),
+            })),
+          ];
+          setPaidByPerson(newPaidByPerson);
+          setDebts(calculateDebts(currentData.payments));
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeFirestore();
+    };
   }, []);
-
-  const getPaids = (): void => {
-    DatabaseService.getPaidByPerson().then((newPaidsByPerson) => {
-      setPaidByPerson(newPaidsByPerson);
-    });
-  };
-
-  const getDebts = (): void => {
-    DatabaseService.getDebts().then((newDebts) => {
-      setDebts(newDebts);
-    });
-  };
 
   const formatCurrency = (amount: number): string => {
     if (amount === 0) {
