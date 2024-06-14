@@ -5,6 +5,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Share,
+  TouchableWithoutFeedback,
 } from "react-native";
 
 import { Link } from "expo-router";
@@ -31,9 +32,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 
 const Home = () => {
-  const { hasTrip, tripCode, updateTripCode } = useContext(
+  const { hasTrip, tripCode, updateTripCode, dropTrip } = useContext(
     TripContext
   ) as TripContextType;
+
+  const [hasFirstPressDrop, setHasFirstPressDrop] = useState<boolean>(false);
 
   const [newTripName, setNewTripName] = useState<string>("");
 
@@ -49,6 +52,7 @@ const Home = () => {
   useEffect(() => {
     /* AsyncStorage.clear() */
     console.log("launched effect!");
+    setHasFirstPressDrop(false);
     if (hasTrip) {
       const unsubscribeFirestore = onSnapshot(
         doc(db, "trips", "cartagena01"),
@@ -121,6 +125,17 @@ const Home = () => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     });
+  };
+
+  const handlePressDropTrip = (): void => {
+    if (hasFirstPressDrop) {
+      dropTrip();
+    } else {
+      setHasFirstPressDrop(true);
+      setTimeout(() => {
+        setHasFirstPressDrop(false);
+      }, 1500);
+    }
   };
 
   return !hasTrip ? (
@@ -377,6 +392,47 @@ const Home = () => {
               </View>
             </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            onPress={handlePressDropTrip}
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 6,
+              },
+              shadowOpacity: 0.39,
+              shadowRadius: 8.3,
+              borderWidth: 1,
+              borderColor: hasFirstPressDrop ? "#820014" : "#cf1322",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "auto",
+              backgroundColor: hasFirstPressDrop ? "#820014" : "#cf1322",
+              display: "flex",
+              flexDirection: "row",
+              height: 50,
+              width: "auto",
+              marginTop: 20,
+              paddingHorizontal: 30,
+              borderRadius: 100,
+            }}
+          >
+            <FontAwesome5
+              name="heart-broken"
+              size={18}
+              color="white"
+              style={{ marginRight: 10, marginLeft: -10 }}
+            />
+            <Text
+              style={{
+                color: "white",
+                fontSize: 20,
+                fontWeight: "bold",
+              }}
+            >
+              {hasFirstPressDrop ? "¿Seguro?" : "Abandonar viaje"}
+            </Text>
+          </TouchableOpacity>
         </View>
         {payments.length > 0 && (
           <View

@@ -26,8 +26,16 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({
     DatabaseService.saveLocalTripCode(newTripCode);
   };
 
+  const dropTrip = (): void => {
+    setHasTrip(false);
+    setTripCode("");
+    DatabaseService.saveLocalTripCode("");
+  };
+
   return (
-    <TripContext.Provider value={{ hasTrip, tripCode, updateTripCode }}>
+    <TripContext.Provider
+      value={{ hasTrip, tripCode, updateTripCode, dropTrip }}
+    >
       {children}
     </TripContext.Provider>
   );
