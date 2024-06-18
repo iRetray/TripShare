@@ -4,7 +4,7 @@ import React, { createContext, useEffect, useState } from "react";
 
 export const TripContext = createContext<TripContextType | null>(null);
 
-const TripProvider: React.FC<{ children: React.ReactNode }> = ({
+export const TripProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [hasTrip, setHasTrip] = useState<boolean>(false);
@@ -12,7 +12,6 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     DatabaseService.getLocalTripCode().then((code) => {
-      console.log("get from storage: ", code);
       if (code !== "") {
         setHasTrip(true);
         setTripCode(code);
@@ -21,14 +20,14 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const updateTripCode = (newTripCode: string): void => {
-    setHasTrip(true);
     setTripCode(newTripCode);
+    setHasTrip(true);
     DatabaseService.saveLocalTripCode(newTripCode);
   };
 
   const dropTrip = (): void => {
-    setHasTrip(false);
     setTripCode("");
+    setHasTrip(false);
     DatabaseService.saveLocalTripCode("");
   };
 
@@ -40,5 +39,3 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({
     </TripContext.Provider>
   );
 };
-
-export default TripProvider;

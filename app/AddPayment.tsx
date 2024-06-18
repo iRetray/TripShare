@@ -9,13 +9,15 @@ import {
 } from "react-native";
 
 import { Input, InputMoney, Picker } from "./components";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { router } from "expo-router";
 
 import { Text } from "react-native";
 
 import * as Haptics from "expo-haptics";
+
+import * as Crypto from "expo-crypto";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -31,6 +33,8 @@ import {
 import { app } from "../firebaseConfig";
 
 import { RootSiblingParent as ToastNotificationsProvider } from "react-native-root-siblings";
+import { TripContext } from "./context/TripContext";
+import { TripContextType } from "./context/interfaces";
 
 enum PaymentWay {
   equal = "Partes iguales",
@@ -38,6 +42,8 @@ enum PaymentWay {
 }
 
 const AddPayment = () => {
+  const { hasTrip, tripCode } = useContext(TripContext) as TripContextType;
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [people, setPeople] = useState<string[]>([]);
   const [form, setForm] = useState<Payment>({
@@ -50,30 +56,32 @@ const AddPayment = () => {
   });
 
   useEffect(() => {
-    const unsubscribeFirestore = onSnapshot(
-      doc(db, "trips", "cartagena01"),
-      (doc) => {
-        if (doc.exists()) {
-          const newData: any = doc.data();
-          const currentData: TripObject = newData;
-          setPeople(currentData.people);
-          setForm({
-            ...form,
-            customPayment: [
-              ...currentData.people.map((personName) => ({
-                name: personName,
-                expense: 0,
-              })),
-            ],
-          });
+    if (hasTrip && tripCode !== "") {
+      const unsubscribeFirestore = onSnapshot(
+        doc(db, "trips", tripCode),
+        (doc) => {
+          if (doc.exists()) {
+            const newData: any = doc.data();
+            const currentData: TripObject = newData;
+            setPeople(currentData.people);
+            setForm({
+              ...form,
+              customPayment: [
+                ...currentData.people.map((personName) => ({
+                  name: personName,
+                  expense: 0,
+                })),
+              ],
+            });
+          }
         }
-      }
-    );
+      );
 
-    return () => {
-      unsubscribeFirestore();
-    };
-  }, []);
+      return () => {
+        unsubscribeFirestore();
+      };
+    }
+  }, [hasTrip, tripCode]);
 
   const handleSelectOptionPayer = (newPayer: string): void => {
     setForm({ ...form, payer: newPayer });
@@ -160,11 +168,16 @@ const AddPayment = () => {
 
   const savePaymentInFirebase = (payment: Payment): void => {
     setIsLoading(true);
-    const currentTripRef = doc(db, "trips", "cartagena01");
+    const currentTripRef = doc(db, "trips", tripCode);
     getDoc(currentTripRef).then((doc) => {
       if (doc.exists()) {
+        const paymentWithID = {
+          ...payment,
+          ID: Crypto.randomUUID(),
+          creationDate: Date.now(),
+        };
         updateDoc(currentTripRef, {
-          payments: [...doc.data().payments, payment],
+          payments: [...doc.data().payments, paymentWithID],
         })
           .then(() => {
             setIsLoading(false);

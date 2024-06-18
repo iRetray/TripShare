@@ -18,7 +18,7 @@ import NetInfo from "@react-native-community/netinfo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import TripProvider from "./context/TripContext";
+import { TripProvider } from "./context/TripContext";
 
 export default function Layout() {
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
@@ -188,6 +188,13 @@ export default function Layout() {
             options={{
               presentation: "modal",
               title: "Resumen completo",
+            }}
+          />
+          <Stack.Screen
+            name="OptionsPayment"
+            options={{
+              presentation: "modal",
+              title: "Modificar pago",
             }}
           />
         </Stack>

@@ -26,6 +26,8 @@ const DatabaseService = {
   saveLocalTripCode: async (tripCode: string): Promise<void> => {
     await StorageService.save(LOCAL_TRIP_CODE, tripCode);
   },
+
+  calculateDebts: () => {},
 };
 
 export function calculateDebts(database: any): any {

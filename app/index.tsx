@@ -5,15 +5,20 @@ import {
   ScrollView,
   ActivityIndicator,
   Share,
-  TouchableWithoutFeedback,
 } from "react-native";
 
 import { Link } from "expo-router";
+import { router } from "expo-router";
 
 import * as Haptics from "expo-haptics";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Input, Payment as PaymentComponent, TravelCard } from "./components";
-import { useState, useEffect, useContext } from "react";
+import {
+  ButtonConfirm,
+  Input,
+  Payment as PaymentComponent,
+  TravelCard,
+} from "./components";
+import { useState, useEffect, useContext, Fragment } from "react";
 import { Payment, TripObject } from "./types";
 
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -28,15 +33,14 @@ import { TripContextType } from "./context/interfaces";
 import Entypo from "@expo/vector-icons/Entypo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Toast from "react-native-root-toast";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
+
+import { Payment as PaymentInterface } from "./types";
 
 const Home = () => {
   const { hasTrip, tripCode, updateTripCode, dropTrip } = useContext(
     TripContext
   ) as TripContextType;
-
-  const [hasFirstPressDrop, setHasFirstPressDrop] = useState<boolean>(false);
 
   const [newTripName, setNewTripName] = useState<string>("");
 
@@ -44,21 +48,18 @@ const Home = () => {
 
   const [amountPersons, setAmountPersons] = useState<number>(0);
   const [totalExpenses, setTotalExpenses] = useState<number>(0);
-
   const [payments, setPayments] = useState<Payment[]>([]);
 
   const db = getFirestore(app);
 
   useEffect(() => {
-    /* AsyncStorage.clear() */
-    console.log("launched effect!");
-    setHasFirstPressDrop(false);
-    if (hasTrip) {
+    if (hasTrip && tripCode !== "") {
       const unsubscribeFirestore = onSnapshot(
-        doc(db, "trips", "cartagena01"),
+        doc(db, "trips", tripCode),
         (doc) => {
           if (doc.exists()) {
             const newData: any = doc.data();
+            console.log("snapshot! ", JSON.stringify(newData));
             const currentData: TripObject = newData;
             setAmountPersons(currentData.people.length);
             setTotalExpenses(
@@ -77,7 +78,7 @@ const Home = () => {
         unsubscribeFirestore();
       };
     }
-  }, [hasTrip]);
+  }, [hasTrip, tripCode]);
 
   const handleChangeNewTrip = (newTrip: string): void => {
     const cleanInput = newTrip.replace(/[^\w\d]/g, "").toLowerCase();
@@ -127,15 +128,9 @@ const Home = () => {
     });
   };
 
-  const handlePressDropTrip = (): void => {
-    if (hasFirstPressDrop) {
-      dropTrip();
-    } else {
-      setHasFirstPressDrop(true);
-      setTimeout(() => {
-        setHasFirstPressDrop(false);
-      }, 1500);
-    }
+  const openModalDeletePayment = (payment: PaymentInterface): void => {
+    router.setParams({ payment: JSON.stringify(payment) });
+    router.navigate("OptionsPayment");
   };
 
   return !hasTrip ? (
@@ -392,47 +387,21 @@ const Home = () => {
               </View>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={handlePressDropTrip}
-            style={{
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 6,
-              },
-              shadowOpacity: 0.39,
-              shadowRadius: 8.3,
-              borderWidth: 1,
-              borderColor: hasFirstPressDrop ? "#820014" : "#cf1322",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "auto",
-              backgroundColor: hasFirstPressDrop ? "#820014" : "#cf1322",
-              display: "flex",
-              flexDirection: "row",
-              height: 50,
-              width: "auto",
-              marginTop: 20,
-              paddingHorizontal: 30,
-              borderRadius: 100,
+          <ButtonConfirm
+            text="Abandonar viaje"
+            textConfirm="¿Seguro?"
+            icon={
+              <FontAwesome5
+                name="heart-broken"
+                size={18}
+                color="white"
+                style={{ marginRight: 10, marginLeft: -10 }}
+              />
+            }
+            onPressConfirmed={() => {
+              dropTrip();
             }}
-          >
-            <FontAwesome5
-              name="heart-broken"
-              size={18}
-              color="white"
-              style={{ marginRight: 10, marginLeft: -10 }}
-            />
-            <Text
-              style={{
-                color: "white",
-                fontSize: 20,
-                fontWeight: "bold",
-              }}
-            >
-              {hasFirstPressDrop ? "¿Seguro?" : "Abandonar viaje"}
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
         {payments.length > 0 && (
           <View
@@ -524,9 +493,39 @@ const Home = () => {
             </Link>
           </View>
         )}
+        {payments.length > 0 && (
+          <View
+            style={{
+              marginHorizontal: 20,
+              borderRadius: 10,
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              backgroundColor: "white",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Entypo name="info-with-circle" size={24} color="#8c8c8c" />
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: "bold",
+                fontFamily: "Helvetica Neue",
+                marginLeft: 10,
+                color: "#8c8c8c",
+              }}
+            >
+              Manten presionado para editar o eliminar un pago
+            </Text>
+          </View>
+        )}
         {payments.map((payment: Payment, index: number) => (
           <View key={index}>
-            <PaymentComponent payment={payment} />
+            <PaymentComponent
+              payment={payment}
+              onLongPress={openModalDeletePayment}
+            />
             {index === payments.length - 1 && (
               <View style={{ height: 120 }}></View>
             )}
