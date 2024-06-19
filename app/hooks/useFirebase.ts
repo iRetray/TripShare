@@ -7,6 +7,7 @@ import {
   getDoc,
   getFirestore,
   onSnapshot,
+  updateDoc,
 } from "firebase/firestore";
 import { app } from "../../firebaseConfig";
 
@@ -23,6 +24,8 @@ type FirebaseHook = (props?: FirebaseHookProps) => {
   getTripByName: (
     name: string
   ) => Promise<DocumentSnapshot<DocumentData, DocumentData>>;
+  getCurrentTrip: () => Promise<DocumentSnapshot<DocumentData, DocumentData>>;
+  updateCurrentTrip: (newData: any) => Promise<void>;
 };
 
 export const useFirebase: FirebaseHook = (props) => {
@@ -60,8 +63,20 @@ export const useFirebase: FirebaseHook = (props) => {
     return getDoc(currentTripRef);
   };
 
+  const getCurrentTrip = () => {
+    const currentTripRef = doc(db, "trips", tripCode);
+    return getDoc(currentTripRef);
+  };
+
+  const updateCurrentTrip = (newData: any) => {
+    const currentTripRef = doc(db, "trips", tripCode);
+    return updateDoc(currentTripRef, newData);
+  };
+
   return {
     isLoading,
     getTripByName,
+    getCurrentTrip,
+    updateCurrentTrip,
   };
 };

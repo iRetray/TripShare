@@ -17,7 +17,7 @@ const StorageService = {
 
 const DatabaseService = {
   getLocalTripCode: (): Promise<string> =>
-    new Promise(async (resolve) => {
+    new Promise((resolve) => {
       StorageService.load(LOCAL_TRIP_CODE).then((versionLoaded) => {
         resolve(versionLoaded ? versionLoaded : "");
       });
