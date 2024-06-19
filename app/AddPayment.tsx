@@ -112,8 +112,7 @@ const AddPayment = () => {
         form.payer !== "" &&
         form.value !== 0 &&
         form.description !== "" &&
-        typeof form.isCustomPayment === "boolean" &&
-        isCustomPaymentValid;
+        typeof form.isCustomPayment === "boolean";
       if (isFormValid) {
         savePaymentInFirebase(form);
       } else {
@@ -230,9 +229,9 @@ const AddPayment = () => {
                   Ingresa el valor que le corresponde a cada persona
                 </Text>
               </View>
-              {people.map((person, index) => (
+              {people.map((person) => (
                 <PersonExpense
-                  key={index}
+                  key={person}
                   name={person}
                   handleChangeExpense={(expense) => {
                     handleChangePersonExpense(person, expense);

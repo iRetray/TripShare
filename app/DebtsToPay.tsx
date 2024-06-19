@@ -1,58 +1,38 @@
-import { View, Text, ScrollView } from "react-native";
-
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import React, { useState } from "react";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 
 import { Option } from "./components";
-import { useContext, useEffect, useState } from "react";
-import DatabaseService, { calculateDebts } from "./services/DatabaseService";
-import { PaidByPerson } from "./types/PaidByPerson.type";
+import { calculateDebts } from "./services/DatabaseService";
 
+import Ionicons from "@expo/vector-icons/Ionicons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Debt } from "./types/Debt.type";
-
 import Feather from "@expo/vector-icons/Feather";
-import { collection, doc, getFirestore, onSnapshot } from "firebase/firestore";
+
+import { PaidByPerson } from "./types/PaidByPerson.type";
+import { Debt } from "./types/Debt.type";
 import { TripObject } from "./types";
-import { app } from "../firebaseConfig";
-import { TripContext } from "./context/TripContext";
-import { TripContextType } from "./context/interfaces";
 
+import { useFirebase } from "./hooks";
+
+/* Format currency to helper file */
 const DebtsToPay = () => {
-  const { hasTrip, tripCode } = useContext(TripContext) as TripContextType;
-
   const [paidByPerson, setPaidByPerson] = useState<PaidByPerson[]>([]);
   const [debts, setDebts] = useState<Debt[]>([]);
 
-  const db = getFirestore(app);
+  const handleGetData = (newData: TripObject) => {
+    const newPaidByPerson = [
+      ...newData.people.map((person) => ({
+        name: person,
+        value: newData.payments
+          .filter((payment) => payment.payer === person)
+          .reduce((previous, current) => previous + current.value, 0),
+      })),
+    ];
+    setPaidByPerson(newPaidByPerson);
+    setDebts(calculateDebts(newData.payments));
+  };
 
-  useEffect(() => {
-    if (hasTrip && tripCode !== "") {
-      const unsubscribeFirestore = onSnapshot(
-        doc(db, "trips", tripCode),
-        (doc) => {
-          if (doc.exists()) {
-            const newData: any = doc.data();
-            const currentData: TripObject = newData;
-            const newPaidByPerson = [
-              ...currentData.people.map((person) => ({
-                name: person,
-                value: currentData.payments
-                  .filter((payment) => payment.payer === person)
-                  .reduce((previous, current) => previous + current.value, 0),
-              })),
-            ];
-            setPaidByPerson(newPaidByPerson);
-            setDebts(calculateDebts(currentData.payments));
-          }
-        }
-      );
-
-      return () => {
-        unsubscribeFirestore();
-      };
-    }
-  }, [hasTrip, tripCode]);
+  useFirebase({ onGetData: handleGetData });
 
   const formatCurrency = (amount: number): string => {
     if (amount === 0) {
@@ -66,52 +46,20 @@ const DebtsToPay = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={{ paddingTop: 20 }}
+        style={styles.scrollview}
       >
-        <View style={{ marginHorizontal: 20, marginTop: 30 }}>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 15,
-            }}
-          >
+        <View style={styles.internalContainer}>
+          <View style={styles.titleContainer}>
             <Ionicons name="person" size={30} color="black" />
-            <Text
-              style={{
-                fontSize: 25,
-                fontWeight: "bold",
-                fontFamily: "Helvetica Neue",
-                marginLeft: 10,
-              }}
-            >
-              Pagos por persona
-            </Text>
+            <Text style={styles.title}>Pagos por persona</Text>
           </View>
-          <View
-            style={{
-              backgroundColor: "#d9d9d9",
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              paddingBottom: 20,
-              borderRadius: 5,
-            }}
-          >
-            {paidByPerson.map((paidPerson, index) => (
-              <View
-                key={index}
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 10,
-                }}
-              >
-                <View style={{ marginRight: "auto", marginBottom: -10 }}>
+          <View style={styles.paidByPersonContainer}>
+            {paidByPerson.map((paidPerson) => (
+              <View key={paidPerson.name} style={styles.personContainer}>
+                <View style={styles.optionContainer}>
                   <Option
                     useAlternativeIcon={false}
                     name={paidPerson.name}
@@ -119,68 +67,21 @@ const DebtsToPay = () => {
                     onPress={() => {}}
                   />
                 </View>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "bold",
-                    fontFamily: "Helvetica Neue",
-                    color: "#8c8c8c",
-                  }}
-                >
+                <Text style={styles.value}>
                   {formatCurrency(paidPerson.value)}
                 </Text>
               </View>
             ))}
           </View>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 15,
-              marginTop: 30,
-            }}
-          >
+          <View style={styles.titleDebtsContainer}>
             <FontAwesome6 name="wallet" size={30} color="black" />
-            <Text
-              style={{
-                fontSize: 25,
-                fontWeight: "bold",
-                fontFamily: "Helvetica Neue",
-                marginLeft: 10,
-              }}
-            >
-              Deudas
-            </Text>
+            <Text style={styles.titleDebts}>Deudas</Text>
           </View>
-          <View
-            style={{
-              backgroundColor: "#d9d9d9",
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              paddingBottom: 20,
-              borderRadius: 5,
-              marginBottom: 70,
-            }}
-          >
-            {debts.map((oneDebt, index) => (
-              <View
-                key={index}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  marginTop: 30,
-                }}
-              >
-                <View
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <View style={{ marginRight: "auto", marginBottom: -10 }}>
+          <View style={styles.debtsContainer}>
+            {debts.map((oneDebt) => (
+              <View key={oneDebt.from} style={styles.debtContainer}>
+                <View style={styles.debtOption}>
+                  <View style={styles.debtOptionInternal}>
                     <Option
                       useAlternativeIcon={false}
                       name={oneDebt.from}
@@ -194,7 +95,7 @@ const DebtsToPay = () => {
                     size={24}
                     color="black"
                   />
-                  <View style={{ marginRight: "auto", marginBottom: -10 }}>
+                  <View style={styles.debtOptionInternal}>
                     <Option
                       useAlternativeIcon={false}
                       name={oneDebt.to}
@@ -203,14 +104,7 @@ const DebtsToPay = () => {
                     />
                   </View>
                 </View>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "bold",
-                    fontFamily: "Helvetica Neue",
-                    color: "#8c8c8c",
-                  }}
-                >
+                <Text style={styles.mainText}>
                   {`debe `}
                   <Text style={{ color: "black" }}>
                     {formatCurrency(oneDebt.amount)}
@@ -225,5 +119,82 @@ const DebtsToPay = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  scrollview: { paddingTop: 20 },
+  internalContainer: { marginHorizontal: 20, marginTop: 30 },
+  titleContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: 25,
+    fontWeight: "bold",
+    fontFamily: "Helvetica Neue",
+    marginLeft: 10,
+  },
+  paidByPersonContainer: {
+    backgroundColor: "#d9d9d9",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    paddingBottom: 20,
+    borderRadius: 5,
+  },
+  personContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  optionContainer: { marginRight: "auto", marginBottom: -10 },
+  value: {
+    fontSize: 20,
+    fontWeight: "bold",
+    fontFamily: "Helvetica Neue",
+    color: "#8c8c8c",
+  },
+  titleDebtsContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+    marginTop: 30,
+  },
+  titleDebts: {
+    fontSize: 25,
+    fontWeight: "bold",
+    fontFamily: "Helvetica Neue",
+    marginLeft: 10,
+  },
+  debtsContainer: {
+    backgroundColor: "#d9d9d9",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    paddingBottom: 20,
+    borderRadius: 5,
+    marginBottom: 70,
+  },
+  debtContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    marginTop: 30,
+  },
+  debtOption: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  debtOptionInternal: { marginRight: "auto", marginBottom: -10 },
+  mainText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    fontFamily: "Helvetica Neue",
+    color: "#8c8c8c",
+  },
+});
 
 export default DebtsToPay;
