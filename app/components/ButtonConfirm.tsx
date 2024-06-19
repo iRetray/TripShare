@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity } from "react-native";
+import {
+  ActivityIndicator,
+  Text,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+} from "react-native";
 
 const DELAY_TO_CANCEL = 1500;
 
@@ -38,53 +44,55 @@ export const ButtonConfirm: React.FC<ButtonConfirmProps> = ({
       disabled={isLoading}
       onPress={handlePressDropTrip}
       style={{
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 6,
-        },
-        shadowOpacity: 0.39,
-        shadowRadius: 8.3,
-        borderWidth: 1,
+        ...styles.pressable,
         borderColor: isLoading
           ? "#ff4d4f"
           : hasFirstPressDrop
           ? "#820014"
           : "#cf1322",
-        alignItems: "center",
-        justifyContent: "center",
-        margin: "auto",
         backgroundColor: isLoading
           ? "#ff4d4f"
           : hasFirstPressDrop
           ? "#820014"
           : "#cf1322",
-        display: "flex",
-        flexDirection: "row",
-        height: 50,
-        width: "auto",
-        marginTop: 20,
-        paddingHorizontal: 30,
-        borderRadius: 100,
       }}
     >
       {isLoading ? (
-        <ActivityIndicator
-          color="white"
-          style={{ marginRight: 10, marginLeft: -10 }}
-        />
+        <ActivityIndicator color="white" style={styles.icon} />
       ) : (
-        icon
+        <View style={styles.icon}>{icon}</View>
       )}
-      <Text
-        style={{
-          color: "white",
-          fontSize: 20,
-          fontWeight: "bold",
-        }}
-      >
+      <Text style={styles.text}>
         {isLoading ? textLoading : hasFirstPressDrop ? textConfirm : text}
       </Text>
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  pressable: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.39,
+    shadowRadius: 8.3,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "auto",
+    display: "flex",
+    flexDirection: "row",
+    height: 50,
+    width: "auto",
+    paddingHorizontal: 30,
+    borderRadius: 100,
+  },
+  icon: { marginRight: 10, marginLeft: -10 },
+  text: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+});

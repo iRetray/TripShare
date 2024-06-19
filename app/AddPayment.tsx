@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import { Input, InputMoney, Picker } from "./components";
+import { Button, Input, InputMoney, Picker } from "./components";
 import { useContext, useEffect, useState } from "react";
 
 import { router } from "expo-router";
@@ -269,48 +269,16 @@ const AddPayment = () => {
               ))}
             </View>
           )}
-          <TouchableOpacity
-            disabled={isLoading}
-            onPress={onPressSave}
-            style={{
-              marginTop: 30,
-              marginBottom: 30,
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 6,
-              },
-              shadowOpacity: 0.39,
-              shadowRadius: 8.3,
-              elevation: 13,
-              borderWidth: 1,
-              borderColor: isLoading ? "#8c8c8c" : "rgba(0,0,0,0.2)",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "auto",
-              backgroundColor: isLoading ? "#8c8c8c" : "#000000",
-              display: "flex",
-              flexDirection: "row",
-              height: 50,
-              width: "auto",
-              paddingHorizontal: 30,
-              borderRadius: 100,
-            }}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" style={{ marginRight: 15 }} />
-            ) : (
-              <FontAwesome
-                name="plus"
-                size={24}
-                color="white"
-                style={{ marginRight: 15 }}
-              />
-            )}
-            <Text style={{ color: "white", fontSize: 25, fontWeight: "bold" }}>
-              {isLoading ? "Guardando..." : "Añadir pago"}
-            </Text>
-          </TouchableOpacity>
+          <View style={{ marginTop: 20 }}>
+            <Button
+              isLoading={isLoading}
+              loadingText="Guardando..."
+              title="Añadir pago"
+              disabled={isLoading}
+              icon={<FontAwesome name="plus" size={24} color="white" />}
+              onPress={onPressSave}
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </ToastNotificationsProvider>

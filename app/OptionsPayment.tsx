@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { router, useNavigation } from "expo-router";
 
 import { Payment as PaymentInterface } from "./types";
-import { ButtonConfirm, Payment } from "./components";
+import { Button, ButtonConfirm, Payment } from "./components";
 
 import * as Haptics from "expo-haptics";
 
@@ -72,49 +72,26 @@ const OptionsPayment = () => {
         >
           <View style={{ marginHorizontal: 20, marginTop: 30 }}>
             <Payment payment={payment} onLongPress={() => {}} />
-            <View style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Success
-                  );
-                }}
-                style={{
-                  marginTop: 20,
-                  shadowColor: "#000",
-                  shadowOffset: {
-                    width: 0,
-                    height: 6,
-                  },
-                  shadowOpacity: 0.39,
-                  shadowRadius: 8.3,
-                  elevation: 13,
-                  borderWidth: 1,
-                  borderColor: "rgba(0,0,0,0.2)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "auto",
-                  backgroundColor: "#000000",
-                  display: "flex",
-                  flexDirection: "row",
-                  height: 50,
-                  width: "auto",
-                  paddingHorizontal: 30,
-                  borderRadius: 100,
-                }}
-              >
-                <Entypo
-                  name="new-message"
-                  size={25}
-                  style={{ marginRight: 15 }}
-                  color="white"
-                />
-                <Text
-                  style={{ color: "white", fontSize: 20, fontWeight: "bold" }}
-                >
-                  Editar
-                </Text>
-              </TouchableOpacity>
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 20,
+                marginTop: 20,
+              }}
+            >
+              <Button
+                title="Editar"
+                icon={
+                  <Entypo
+                    name="new-message"
+                    size={25}
+                    style={{ marginRight: 15 }}
+                    color="white"
+                  />
+                }
+                onPress={() => {}}
+              />
               <ButtonConfirm
                 isLoading={isLoading}
                 textLoading="...Cargando"
@@ -125,7 +102,6 @@ const OptionsPayment = () => {
                     name="delete-forever"
                     size={24}
                     color="white"
-                    style={{ marginRight: 10, marginLeft: -10 }}
                   />
                 }
                 onPressConfirmed={handleDeletePayment}
